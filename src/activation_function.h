@@ -27,19 +27,18 @@ struct Softmax {
 }  // namespace details_activation_functions
 
 class ActivationFunc {
-  using Function = std::function<Vector(Vector)>;
-  using Differential = std::function<Matrix(Vector)>;
-  //ActivationFunc(Function&& apply, Differential&& differential);
-
+    using Function = std::function<Vector(Vector)>;
+    using Differential = std::function<Matrix(Vector)>;
+    // ActivationFunc(Function&& apply, Differential&& differential);
 
 public:
-  explicit ActivationFunc(NamesActivationFunc name);
-  Vector Activate(const Vector& vector);
-  Matrix GetDifferential(const Vector& vector);
+    explicit ActivationFunc(NamesActivationFunc name);
+    Vector Activate(const Vector& vector);
+    Matrix GetDifferential(const Vector& vector);
 
 private:
-  Function apply_;
-  Differential differential_;
+    Function apply_;
+    Differential differential_;
 };
 
 }  // namespace network

@@ -48,7 +48,6 @@ Matrix Softmax::GetDifferential(const Vector &vector) {
 
 }  // namespace details_activation_functions
 
-
 ActivationFunc::ActivationFunc(NamesActivationFunc name) {
     switch (name) {
         case NamesActivationFunc::Sigmoid:

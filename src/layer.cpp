@@ -1,4 +1,2 @@
 #include "layer.h"
-namespace network{
-
-}
+namespace network {}
