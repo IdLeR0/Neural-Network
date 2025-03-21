@@ -3,38 +3,17 @@
 #include <cmath>
 #include <functional>
 namespace network {
-enum class NamesActivationFunc { Sigmoid, ReLU, Tanh, Softmax };
-
-namespace details_activation_functions {
-struct Sigmoid {
-    static Vector Activate(const Vector& vector);
-    static Matrix GetDifferential(const Vector& vector);
-};
-
-struct Tanh {
-    static Vector Activate(const Vector& vector);
-    static Matrix GetDifferential(const Vector& vector);
-};
-
-struct ReLU {
-    static Vector Activate(const Vector& vector);
-    static Matrix GetDifferential(const Vector& vector);
-};
-struct Softmax {
-    static Vector Activate(const Vector& vector);
-    static Matrix GetDifferential(const Vector& vector);
-};
-}  // namespace details_activation_functions
-
 class ActivationFunc {
-    using Function = std::function<Vector(Vector)>;
-    using Differential = std::function<Matrix(Vector)>;
-    // ActivationFunc(Function&& apply, Differential&& differential);
+    using Function = std::function<Vector(const Vector&)>;
+    using Differential = std::function<Matrix(const Vector&)>;
 
 public:
-    explicit ActivationFunc(NamesActivationFunc name);
-    Vector Activate(const Vector& vector);
-    Matrix GetDifferential(const Vector& vector);
+    enum class Name { Sigmoid, ReLU, Tanh, Softmax };
+    explicit ActivationFunc(Name name);
+    void SetFunction(Name name);
+    Vector Apply(const Vector& x) const;
+    Matrix Apply(const Matrix& x) const;
+    Matrix GetDifferential(const Vector& x) const;
 
 private:
     Function apply_;

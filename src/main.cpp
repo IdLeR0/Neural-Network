@@ -1,17 +1,8 @@
-#include <Eigen/Dense>
-#include <EigenRand/EigenRand>
-#include <random>
+#include "adam_optimizer.h"
 #include <iostream>
-using RandGen = Eigen::Rand::Vmt19937_64;
 
-RandGen& GetRng() {
-    static RandGen rng = 1;
-    return rng;
-}
+// main я пока использую, чтобы посмотреть так все работает как я ожидаю или нет. В итоговой проект
+// он не войдет.
+
 int main() {
-    int rows = 2;
-    int cols = 2;
-    Eigen::MatrixXd result = Eigen::Rand::normal<Eigen::MatrixXd>(rows, cols, GetRng());
-    std::cout << result << std::endl;
-    return 0;
 }
