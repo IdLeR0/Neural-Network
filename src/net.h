@@ -15,6 +15,7 @@ struct OptimizersParams {
     AdamOptimizer bias;
 };
 }  // namespace details
+
 class Net {
     using Layers = std::vector<Layer>;
     using ComputedBatches = std::vector<Matrix>;

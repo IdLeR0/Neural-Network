@@ -3,7 +3,7 @@
 #include "activation_function.h"
 #include "adam_optimizer.h"
 #include "layer.h"
-
+#include <iostream>
 namespace network {
 Net::Net(DataLoader&& dl, LossFunc::Name name) : dl_(std::move(dl)), loss_func_(name) {
 }
@@ -35,6 +35,7 @@ void Net::Backward(int batch_size, int num_epochs, double start_learning_rate, d
                    double beta2) {
     assert(!layers_.empty() && "empty layers");
     for (int i = 0; i < layers_.size(); ++i) {
+
         Index rows = layers_[i].GetWeightRows();
         Index cols = layers_[i].GetWeightCols();
         AdamOptimizer opt_of_weights(Rows{rows}, Cols{cols}, start_learning_rate, beta1, beta2);

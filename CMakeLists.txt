@@ -11,11 +11,13 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/libs/eigen
     ${CMAKE_SOURCE_DIR}/libs/EigenRand
     ${CMAKE_SOURCE_DIR}/libs/googletest/googletest/include
-    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/libs/mnist/include
+    ${CMAKE_SOURCE_DIR}/src/include
 )
 
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/googletest)
+# add_subdirectory(libs/mnist)
 # add_subdirectory(${CMAKE_SOURCE_DIR}/libs/EigenRand)
 # add_subdirectory(${CMAKE_SOURCE_DIR}/libs/eigen)
 
@@ -39,6 +41,7 @@ add_executable(test_layer
 target_link_libraries(test_layer PRIVATE gtest gtest_main)
 
 add_executable(main src/main.cpp src/adam_optimizer.cpp src/net.cpp src/loss_function.cpp src/activation_function.cpp src/dataloader.cpp src/layer.cpp)
+
 
 
 
