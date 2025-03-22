@@ -38,7 +38,7 @@ add_executable(test_layer
     src/activation_function.cpp)
 target_link_libraries(test_layer PRIVATE gtest gtest_main)
 
-add_executable(main src/main.cpp src/adam_optimizer.cpp)
+add_executable(main src/main.cpp src/adam_optimizer.cpp src/net.cpp src/loss_function.cpp src/activation_function.cpp src/dataloader.cpp src/layer.cpp)
 
 
 

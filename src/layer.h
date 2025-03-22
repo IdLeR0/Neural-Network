@@ -47,8 +47,10 @@ public:
     // структора сделана лишь с этой целью.
     WeightsBiasGradient GetWeightsBiasGradient(const Matrix& input_batch,
                                                const Matrix& gradient) const;
-    void UpdateWeights(const Matrix& gradient, double learning_rate);
-    void UpdateBias(const Vector& gradient, double learning_rate);
+    void UpdateWeights(const Matrix& correction);
+    void UpdateBias(const Vector correction);
+    Index GetWeightCols() const;
+    Index GetWeightRows() const;
 
 private:
     static Rand& GlobalRandom();

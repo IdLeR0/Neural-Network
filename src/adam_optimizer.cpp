@@ -3,18 +3,19 @@
 
 namespace network {
 
-AdamOptimizer::AdamOptimizer(const Matrix& parametr, double start_learning_rate, double beta1,
+AdamOptimizer::AdamOptimizer(Rows rows, Cols cols, double start_learning_rate, double beta1,
                              double beta2)
     : t_(0),
       learning_rate_(start_learning_rate),
       beta1_(beta1),
       beta2_(beta2),
-      m_t_(Matrix::Zero(parametr.rows(), parametr.cols())),
-      v_t_(Matrix::Zero(parametr.rows(), parametr.cols())) {
+      m_t_(Matrix::Zero(static_cast<Index>(rows), static_cast<Index>(cols))),
+      v_t_(Matrix::Zero(static_cast<Index>(rows), static_cast<Index>(cols))) {
 }
 
-Matrix AdamOptimizer::ComputeUpdate(const Matrix& gradient) {
-    assert(gradient.rows() == m_t_.rows() && gradient.cols() && m_t_.cols() && "invalid gradient");
+Matrix AdamOptimizer::ComputeCorrection(const Matrix& gradient) {
+    assert(gradient.rows() == m_t_.rows() && "invalid gradient");
+    assert(gradient.cols() == m_t_.cols() && "invalid gradient");
     t_ += 1;
     m_t_ = beta1_ * m_t_ + (1 - beta1_) * gradient;
     Matrix squared_gradient = gradient.cwiseProduct(gradient);

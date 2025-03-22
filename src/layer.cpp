@@ -43,14 +43,14 @@ Matrix Layer::Forward(const Matrix& input) const {
     return func_.Apply(ApplyLinear(input));
 }
 
-void Layer::UpdateWeights(const Matrix& gradient, double learning_rate) {
-    assert(gradient.rows() == weights_.rows() && gradient.cols() == weights_.cols() &&
-           "wrong size of gradient for weights");
-    weights_ = weights_ - learning_rate * gradient;
+void Layer::UpdateWeights(const Matrix& correction) {
+    assert(weights_.cols() == correction.cols() && weights_.rows() == correction.rows() &&
+           "invalid correction");
+    weights_ -= correction;
 }
-void Layer::UpdateBias(const Vector& gradient, double learning_rate) {
-    assert(gradient.size() == bias_.size() && "wrong size of gradient for bias");
-    bias_ = bias_ - learning_rate * gradient;
+void Layer::UpdateBias(const Vector correction) {
+    assert(correction.rows() == bias_.rows() && "invalid correction");
+    bias_ -= correction;
 }
 
 Matrix Layer::Backward(const Matrix& input_batch, const Matrix& gradient) const {
@@ -59,7 +59,7 @@ Matrix Layer::Backward(const Matrix& input_batch, const Matrix& gradient) const 
     assert(weights_.cols() == input_batch.rows() && "wrong size of weight matrix or input_batch");
     Matrix applied_linear = ApplyLinear(input_batch);
     Matrix tmp = gradient;
-    for (int i = 0; i < gradient.cols(); ++i) {
+    for (int i = 0; i < tmp.rows(); ++i) {
         Matrix act_func_differ = func_.GetDifferential(applied_linear.col(i));
         tmp.row(i) = tmp.row(i) * act_func_differ;
     }
@@ -80,9 +80,15 @@ WeightsBiasGradient Layer::GetWeightsBiasGradient(const Matrix& input_batch,
         matrix_grad_biases.col(i) =
             (gradient.row(i) * func_.GetDifferential(applied_linear.col(i))).transpose();
     }
-    grad.bias = matrix_grad_biases.colwise().sum() / matrix_grad_biases.cols();
+    grad.bias = matrix_grad_biases.rowwise().sum() / matrix_grad_biases.cols();
     grad.weights = matrix_grad_biases * input_batch.transpose() / matrix_grad_biases.cols();
     return grad;
+}
+Index Layer::GetWeightCols() const {
+    return weights_.cols();
+}
+Index Layer::GetWeightRows() const {
+    return weights_.rows();
 }
 
 Matrix Layer::InitializedWeights(Index rows, Index cols, Rand& rnd) {

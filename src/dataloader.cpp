@@ -29,13 +29,11 @@ void Shuffle::ShuffleData(Index begin, Index end, Data& data) {
 DataLoader::DataLoader(Data&& data) {
     assert(data.input.cols() == data.output.cols() && "Data input and output columns mismatch");
     data_ = std::move(data);
-    ShuffleData();
 }
 
 DataLoader::DataLoader(const Data& data) {
     assert(data.input.cols() == data.output.cols() && "Data input and output columns mismatch");
     data_ = data;
-    ShuffleData();
 }
 int DataLoader::Size() const {
     return data_.input.cols();

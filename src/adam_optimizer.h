@@ -2,11 +2,14 @@
 #include "linalg.h"
 
 namespace network {
+enum class Rows : Index;
+enum class Cols : Index;
+
 class AdamOptimizer {
 public:
-    AdamOptimizer(const Matrix& parametr, double start_learning_rate = kDefaultStartLearningRate,
+    AdamOptimizer(Rows rows, Cols cols, double start_learning_rate = kDefaultStartLearningRate,
                   double beta1 = kDefaultBeta1, double beta2 = kDefaultBeta2);
-    Matrix ComputeUpdate(const Matrix& gradient);
+    Matrix ComputeCorrection(const Matrix& gradient);
 
 private:
     static constexpr double kDefaultStartLearningRate = 3e-4;

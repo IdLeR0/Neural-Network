@@ -71,6 +71,7 @@ void ActivationFunc::SetFunction(ActivationFunc::Name name) {
         case ActivationFunc::Name::Softmax:
             apply_ = details::Softmax::Apply;
             differential_ = details::Softmax::GetDifferential;
+            break;
         default:
             assert(false && "invalid arguments in ActivationFunc constructor");
     }
