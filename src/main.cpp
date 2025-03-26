@@ -1,4 +1,5 @@
 
+#include "activation_function.h"
 #include "loss_function.h"
 #include "net.h"
 #include <iostream>
@@ -6,11 +7,11 @@
 #include <utility>
 #include "mnist/mnist_reader.hpp"
 
-//за это сори, я по фасту накидывал, чтобы протестить
+// за это сори, я по фасту накидывал, чтобы протестить
 using namespace network;
 Matrix ConvertToMatrix(const std::vector<std::vector<uint8_t>>& images) {
     size_t num_images = images.size();
-    Matrix eigen_images(784, num_images);  
+    Matrix eigen_images(784, num_images);
 
     for (size_t i = 0; i < num_images; ++i) {
         for (int j = 0; j < 784; ++j) {
@@ -22,11 +23,11 @@ Matrix ConvertToMatrix(const std::vector<std::vector<uint8_t>>& images) {
 }
 Matrix LabelToVector(const std::vector<uint8_t>& labels) {
     size_t num_labels = labels.size();
-    Matrix onehot(10, num_labels);  
+    Matrix onehot(10, num_labels);
     onehot.setZero();
 
     for (size_t i = 0; i < num_labels; ++i) {
-        onehot(labels[i], i) = 1.0;  
+        onehot(labels[i], i) = 1.0;
     }
 
     return onehot;
@@ -47,14 +48,17 @@ std::pair<Data, Data> GetTrainDataSet(std::string path_to_data) {
 int main() {
     std::string path = "../libs/mnist";
     std::pair<Data, Data> ans = GetTrainDataSet(path);
+
     DataLoader dl(std::move(ans.first));
-    Net nn(std::move(dl), LossFunc::Name::CrossEntropy);
-    nn.AddLayer(In{784}, Out{256}, ActivationFunc::Name::ReLU);
-    nn.AddLayer(In{256}, Out{10}, ActivationFunc::Name::Softmax);
-    nn.Backward(64, 15);
+    std::vector<int> layers{784, 256, 10};
+    std::vector<ActivationFunc::Name> names{ActivationFunc::Name::ReLU,
+                                            ActivationFunc::Name::Softmax};
+    Net nn(layers, names);
+    nn.Backward(dl, LossFunc::Name::CrossEntropy, 60, 17);
+
     std::cout << "///////////////////////////////// TEST PATR//////////////////////////////////////"
               << std::endl;
-    Matrix evalute_test = nn.Evalute(ans.second.input);
+    Matrix evalute_test = nn.Evaluate(ans.second.input);
     int size_test = ans.second.input.cols();
     int cnt = 0;
     std::cout << " Size TESt       " << size_test << std::endl;
@@ -68,5 +72,5 @@ int main() {
         }
     }
     double accuracy = (static_cast<double>(cnt) / size_test) * 100;
-    std::cout<< accuracy << std::endl;
+    std::cout << accuracy << std::endl;
 }

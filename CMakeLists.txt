@@ -18,12 +18,13 @@ include_directories(
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/googletest)
 # add_subdirectory(libs/mnist)
+
 # add_subdirectory(${CMAKE_SOURCE_DIR}/libs/EigenRand)
 # add_subdirectory(${CMAKE_SOURCE_DIR}/libs/eigen)
 
 add_executable(test_activation_function 
     tests/test_activation_function.cpp 
-    src/activation_function.cpp  # Добавляем исходный файл с реализацией
+    src/activation_function.cpp
 )
 target_link_libraries(test_activation_function PRIVATE gtest gtest_main)
 

@@ -1,8 +1,7 @@
 
 #pragma once
-#include "activation_function.h"
-
 #include "linalg.h"
+#include "activation_function.h"
 
 namespace network {
 
@@ -17,9 +16,8 @@ class Random {
 
 public:
     Random(int seed = kDefaultSeed);
-    // лучше нормальное или равномерное?
     Matrix NormalMatrix(Index rows, Index cols, double mean = 0, double stdev = 1);
-    Vector NormalVector(Index rows, double mean = 0, double stdev = 1);
+    Matrix ConstMatrix(Index rows, Index cols, double value);
 
 private:
     static constexpr int kDefaultSeed = 42;
@@ -33,29 +31,27 @@ class Layer {
     using Rand = details::Random;
 
 public:
+    Layer() = default;
     Layer(In input_size, Out output_size, ActivationFunc::Name name, Rand& rnd = GlobalRandom());
     // этот конструктор больше нужен для тестирование
     Layer(const Matrix& weights, const Vector& bias, ActivationFunc::Name name);
 
     Matrix ApplyLinear(const Matrix& input) const;
-    // Vector Forward(const Vector& input);
     Matrix Forward(const Matrix& input) const;
-    // Vector Backward(const Vector& gradient);
     Matrix Backward(const Matrix& input_batch, const Matrix& gradient) const;
-
-    // наверно это плохая идея, но я думал так, чтобы не пересчитывать матрицу градиентов по b; Эта
-    // структора сделана лишь с этой целью.
     WeightsBiasGradient GetWeightsBiasGradient(const Matrix& input_batch,
                                                const Matrix& gradient) const;
     void UpdateWeights(const Matrix& correction);
     void UpdateBias(const Vector correction);
     Index GetWeightCols() const;
     Index GetWeightRows() const;
+    // friend FileWriter& operator<<(FileWriter& in, const Layer& layer);
+    // friend FileReader& operator>>(FileReader& out, Layer& layer);
 
 private:
     static Rand& GlobalRandom();
-    Matrix InitializedWeights(Index rows, Index cols, Rand& rnd);
-    Vector InitializedBias(Index rows, Rand& rnd);
+    void InitializeParametrs(Index rows, Index cols, ActivationFunc::Name name, Rand& rnd);
+
     ActivationFunc func_;
     Matrix weights_;
     Vector bias_;

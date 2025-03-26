@@ -8,9 +8,9 @@ struct Sigmoid {
         return x.unaryExpr([](double x) { return 1.0 / (1.0 + std::exp(-x)); });
     }
     static Matrix GetDifferential(const Vector& x) {
-        Vector activated_vector = Apply(x);
-        Vector diff = activated_vector.unaryExpr([](double x) { return (1.0 - x) * x; });
-        return diff.asDiagonal();
+        Vector applied_sigmoid = Apply(x);
+        Vector differential = applied_sigmoid.unaryExpr([](double x) { return (1.0 - x) * x; });
+        return differential.asDiagonal();
     }
 };
 
@@ -19,9 +19,9 @@ struct Tanh {
         return x.unaryExpr([](double x) { return std::tanh(x); });
     }
     static Matrix GetDifferential(const Vector& x) {
-        Vector activated_vector = Apply(x);
-        Vector diff = activated_vector.unaryExpr([](double x) { return 1.0 - x * x; });
-        return diff.asDiagonal();
+        Vector applied_tanh = Apply(x);
+        Vector differential = applied_tanh.unaryExpr([](double x) { return 1.0 - x * x; });
+        return differential.asDiagonal();
     }
 };
 
@@ -30,25 +30,28 @@ struct ReLU {
         return x.unaryExpr([](double x) { return std::max(0.0, x); });
     }
     static Matrix GetDifferential(const Vector& x) {
-        Vector diff = x.unaryExpr([](double x) { return x > 0.0 ? 1.0 : 0.0; });
-        return diff.asDiagonal();
+        Vector differential = x.unaryExpr([](double x) { return x > 0.0 ? 1.0 : 0.0; });
+        return differential.asDiagonal();
     }
 };
 struct Softmax {
     static Vector Apply(const Vector& x) {
         Vector tmp = x.unaryExpr([](double x) { return std::exp(x); });
-        Vector activated_vector = tmp / tmp.sum();
-        return activated_vector;
+        Vector applied_softmax = tmp / tmp.sum();
+        return applied_softmax;
     }
     static Matrix GetDifferential(const Vector& x) {
-        Vector tmp = Apply(x);
-        Matrix jacobian(tmp.size(), tmp.size());
-        for (int i = 0; i < tmp.size(); ++i) {
-            for (int j = 0; j < tmp.size(); ++j) {
-                jacobian(i, j) = tmp(i) * ((i == j) ? (1.0 - tmp(j)) : -tmp(j));
-            }
-        }
-        return jacobian;
+        Vector applied_softmax = Apply(x);
+        Matrix tmp = applied_softmax.asDiagonal();
+        return tmp - applied_softmax * applied_softmax.transpose();
+    }
+};
+struct Linear {
+    static Vector Apply(const Vector& x) {
+        return x;
+    }
+    static Matrix GetDifferential(const Vector& x) {
+        return Eigen::MatrixXd::Identity(x.rows(), x.rows());
     }
 };
 
@@ -57,21 +60,31 @@ struct Softmax {
 void ActivationFunc::SetFunction(ActivationFunc::Name name) {
     switch (name) {
         case ActivationFunc::Name::Sigmoid:
+            id_ = static_cast<int>(ActivationFunc::Name::Sigmoid);
             apply_ = details::Sigmoid::Apply;
             differential_ = details::Sigmoid::GetDifferential;
             break;
         case ActivationFunc::Name::ReLU:
+            id_ = static_cast<int>(ActivationFunc::Name::ReLU);
             apply_ = details::ReLU::Apply;
             differential_ = details::ReLU::GetDifferential;
             break;
         case ActivationFunc::Name::Tanh:
+            id_ = static_cast<int>(ActivationFunc::Name::Tanh);
             apply_ = details::Tanh::Apply;
             differential_ = details::Tanh::GetDifferential;
             break;
         case ActivationFunc::Name::Softmax:
+            id_ = static_cast<int>(ActivationFunc::Name::Softmax);
             apply_ = details::Softmax::Apply;
             differential_ = details::Softmax::GetDifferential;
             break;
+        case ActivationFunc::Name::Linear:
+            id_ = static_cast<int>(ActivationFunc::Name::Linear);
+            apply_ = details::Linear::Apply;
+            differential_ = details::Linear::GetDifferential;
+            break;
+
         default:
             assert(false && "invalid arguments in ActivationFunc constructor");
     }
@@ -80,9 +93,7 @@ void ActivationFunc::SetFunction(ActivationFunc::Name name) {
 ActivationFunc::ActivationFunc(ActivationFunc::Name name) {
     SetFunction(name);
 }
-Vector ActivationFunc::Apply(const Vector& vector) const {
-    return apply_(vector);
-}
+
 Matrix ActivationFunc::Apply(const Matrix& x) const {
     Matrix res(x.rows(), x.cols());
 
@@ -94,5 +105,8 @@ Matrix ActivationFunc::Apply(const Matrix& x) const {
 }
 Matrix ActivationFunc::GetDifferential(const Vector& x) const {
     return differential_(x);
+}
+int ActivationFunc::GetId() const {
+    return id_;
 }
 }  // namespace network

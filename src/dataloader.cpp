@@ -3,12 +3,14 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <iostream>
+#include <chrono>
 
 namespace network {
 namespace details {
 Shuffle::Shuffle() : gen_(kDefaultSeed) {
 }
-Shuffle::Shuffle(int seed) : gen_(kDefaultSeed) {
+Shuffle::Shuffle(int seed) : gen_(seed) {
 }
 void Shuffle::ShuffleData(Index begin, Index end, Data& data) {
     assert(begin >= 0 && "Negative start index");
@@ -42,12 +44,17 @@ int DataLoader::Size() const {
 std::vector<Data> DataLoader::Batches(int batch_size) const {
     assert(batch_size > 0 && "Batch size must be positive");
     assert(batch_size <= Size() && "Batch size exceeds training data size");
+    auto start = std::chrono::high_resolution_clock::now();
     std::vector<Data> batches;
     int data_size = Size();
     for (int i = 0; i < data_size; i += batch_size) {
         int cur_batch_size = std::min(batch_size, data_size - i);
         batches.push_back(GetBatch(i, cur_batch_size));
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+    std::cout << "batches time        " << duration.count() << std::endl;
+
     return batches;
 }
 
