@@ -29,5 +29,5 @@ compile_commands.json
 .vscode*
 build*
 libs/eigen
-libs/tqdm.cpp
-src/file_reader_writer*
+
+

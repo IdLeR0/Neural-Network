@@ -46,7 +46,7 @@ struct Softmax {
         return tmp - applied_softmax * applied_softmax.transpose();
     }
 };
-struct Linear {
+struct Id {
     static Vector Apply(const Vector& x) {
         return x;
     }
@@ -60,29 +60,29 @@ struct Linear {
 void ActivationFunc::SetFunction(ActivationFunc::Name name) {
     switch (name) {
         case ActivationFunc::Name::Sigmoid:
-            id_ = static_cast<int>(ActivationFunc::Name::Sigmoid);
+            func_id_ = static_cast<int>(ActivationFunc::Name::Sigmoid);
             apply_ = details::Sigmoid::Apply;
             differential_ = details::Sigmoid::GetDifferential;
             break;
         case ActivationFunc::Name::ReLU:
-            id_ = static_cast<int>(ActivationFunc::Name::ReLU);
+            func_id_ = static_cast<int>(ActivationFunc::Name::ReLU);
             apply_ = details::ReLU::Apply;
             differential_ = details::ReLU::GetDifferential;
             break;
         case ActivationFunc::Name::Tanh:
-            id_ = static_cast<int>(ActivationFunc::Name::Tanh);
+            func_id_ = static_cast<int>(ActivationFunc::Name::Tanh);
             apply_ = details::Tanh::Apply;
             differential_ = details::Tanh::GetDifferential;
             break;
         case ActivationFunc::Name::Softmax:
-            id_ = static_cast<int>(ActivationFunc::Name::Softmax);
+            func_id_ = static_cast<int>(ActivationFunc::Name::Softmax);
             apply_ = details::Softmax::Apply;
             differential_ = details::Softmax::GetDifferential;
             break;
-        case ActivationFunc::Name::Linear:
-            id_ = static_cast<int>(ActivationFunc::Name::Linear);
-            apply_ = details::Linear::Apply;
-            differential_ = details::Linear::GetDifferential;
+        case ActivationFunc::Name::Id:
+            func_id_ = static_cast<int>(ActivationFunc::Name::Id);
+            apply_ = details::Id::Apply;
+            differential_ = details::Id::GetDifferential;
             break;
 
         default:
@@ -106,7 +106,10 @@ Matrix ActivationFunc::Apply(const Matrix& x) const {
 Matrix ActivationFunc::GetDifferential(const Vector& x) const {
     return differential_(x);
 }
-int ActivationFunc::GetId() const {
-    return id_;
+int ActivationFunc::GetFuncId() const {
+    return func_id_;
+}
+bool ActivationFunc::operator==(const ActivationFunc& other) const {
+    return GetFuncId() == other.GetFuncId();
 }
 }  // namespace network

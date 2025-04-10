@@ -10,17 +10,18 @@ class ActivationFunc {
 
 public:
     ActivationFunc() = default;
-    enum class Name { Sigmoid, ReLU, Tanh, Softmax, Linear };
+    enum class Name { Sigmoid, ReLU, Tanh, Softmax, Id };
     explicit ActivationFunc(Name name);
     void SetFunction(Name name);
     Matrix Apply(const Matrix& x) const;
     Matrix GetDifferential(const Vector& x) const;
-    int GetId() const;
+    int GetFuncId() const;
+    bool operator==(const ActivationFunc& other) const;
 
 private:
     Function apply_;
     Differential differential_;
-    int id_;
+    int func_id_;
 };
 
 }  // namespace network

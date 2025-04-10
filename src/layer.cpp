@@ -1,5 +1,6 @@
 #include "layer.h"
 #include "activation_function.h"
+#include "file_reader_writer.h"
 #include <cassert>
 #include <cmath>
 namespace network {
@@ -77,11 +78,29 @@ WeightsBiasGradient Layer::GetWeightsBiasGradient(const Matrix& input_batch,
     grad.weights = matrix_grad_biases * input_batch.transpose() / matrix_grad_biases.cols();
     return grad;
 }
-Index Layer::GetWeightCols() const {
-    return weights_.cols();
+
+FileWriter& operator<<(FileWriter& in, const Layer& layer) {
+    in << layer.func_.GetFuncId();
+    in << layer.weights_;
+    in << layer.bias_;
+    return in;
 }
-Index Layer::GetWeightRows() const {
+
+FileReader& operator>>(FileReader& out, Layer& layer) {
+    int id;
+    Matrix weights;
+    Vector bias;
+    out >> id;
+    out >> weights;
+    out >> bias;
+    layer = Layer(weights, bias, static_cast<ActivationFunc::Name>(id));
+    return out;
+}
+Index Layer::GetWeightsRows() const {
     return weights_.rows();
+}
+Index Layer::GetWeightsCols() const {
+    return weights_.cols();
 }
 
 void Layer::InitializeParametrs(Index rows, Index cols, ActivationFunc::Name name, Rand& rnd) {
@@ -94,7 +113,7 @@ void Layer::InitializeParametrs(Index rows, Index cols, ActivationFunc::Name nam
             bias_ = rnd.ConstMatrix(rows, 1, kConst);
             break;
 
-        case ActivationFunc::Name::Linear:
+        case ActivationFunc::Name::Id:
             weights_ = rnd.NormalMatrix(rows, cols, 0, kConst);
             bias_ = rnd.ConstMatrix(rows, 1, 0);
             break;

@@ -2,7 +2,7 @@
 #pragma once
 #include "linalg.h"
 #include "activation_function.h"
-
+#include "file_reader_writer.h"
 namespace network {
 
 struct WeightsBiasGradient {
@@ -43,10 +43,12 @@ public:
                                                const Matrix& gradient) const;
     void UpdateWeights(const Matrix& correction);
     void UpdateBias(const Vector correction);
-    Index GetWeightCols() const;
-    Index GetWeightRows() const;
-    // friend FileWriter& operator<<(FileWriter& in, const Layer& layer);
-    // friend FileReader& operator>>(FileReader& out, Layer& layer);
+
+    friend FileWriter& operator<<(FileWriter& in, const Layer& layer);
+    friend FileReader& operator>>(FileReader& out, Layer& layer);
+    bool operator==(const Layer& other) const = default;
+    Index GetWeightsRows() const;
+    Index GetWeightsCols() const;
 
 private:
     static Rand& GlobalRandom();
