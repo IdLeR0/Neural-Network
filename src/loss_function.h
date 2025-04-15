@@ -5,7 +5,7 @@ namespace network {
 
 class LossFunc {
 public:
-    enum class Name { Mse, CrossEntropy };
+    enum class Name { Mae, Mse, CrossEntropy };
     LossFunc(Name name);
     double Dist(const Vector &y_out, const Vector &y_expected);
     Matrix GetGradient(const Matrix &y_out, const Matrix &y_expected);

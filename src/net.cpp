@@ -126,8 +126,7 @@ void Net::TrainBatch(Data& data, std::vector<AdamOptimizer>& optimizers, LossFun
            "invalide size of layers_ or computed_batches");
     Matrix cur_gradient = loss_func.GetGradient(computed_batces.back(), data.output);
     for (int i = layers_.size() - 1; i >= 0; --i) {
-        WeightsBiasGradient grad =
-            layers_[i].GetWeightsBiasGradient(computed_batces[i], cur_gradient);
+        ParamsGrad grad = layers_[i].GetParametrsGradient(computed_batces[i], cur_gradient);
         optimizers[i].GetCorrection(grad.weights, grad.bias);
         cur_gradient = layers_[i].Backward(computed_batces[i], cur_gradient);
         layers_[i].UpdateWeights(grad.weights);

@@ -1,26 +1,42 @@
 #include "layer.h"
+#include "EigenRand/Dists/Basic.h"
 #include "activation_function.h"
 #include "file_reader_writer.h"
 #include <cassert>
 #include <cmath>
 namespace network {
-namespace details {
-
-Random::Random(int seed) : generator_(seed) {
+namespace {
+RandomParams& GetRandomGenerator() {
+    static RandomParams rnd;
+    return rnd;
 }
-// кажется ты говорил что лучше заполнять нормальным распределением, а не равномерным
-Matrix Random::NormalMatrix(Index rows, Index cols, double mean, double stdev) {
+}  // namespace
+
+RandomParams::RandomParams(int seed) : generator_(seed) {
+}
+
+Matrix RandomParams::GenerateNormalMatrix(Index rows, Index cols, double mean, double stdev) {
     return Eigen::Rand::normal<Matrix>(rows, cols, generator_, mean, stdev);
 }
-
-Matrix Random::ConstMatrix(Index rows, Index cols, double value) {
-    return Eigen::MatrixXd::Constant(rows, cols, value);
+Vector RandomParams::GenerateNormalVector(Index rows, double mean, double stdev) {
+    return GenerateNormalMatrix(rows, 1, mean, stdev);
+}
+Matrix RandomParams::GenerateUniformMatrix(Index rows, Index cols, double min, double max) {
+    return Eigen::Rand::uniformReal<Matrix>(rows, cols, generator_, min, max);
+}
+Vector RandomParams::GenerateUniformVector(Index rows, double min, double max) {
+    return GenerateUniformMatrix(rows, 1, min, max);
 }
 
-}  // namespace details
+Matrix RandomParams::GenerateConstantMatrix(Index rows, Index cols, double value) {
+    return Eigen::MatrixXd::Constant(rows, cols, value);
+}
+Vector RandomParams::GenerateConstantVector(Index rows, double value) {
+    return GenerateConstantMatrix(rows, 1, value);
+}
 
-Layer::Layer(In input_size, Out output_size, ActivationFunc::Name name, Rand& rnd) : func_(name) {
-    InitializeParametrs(static_cast<Index>(output_size), static_cast<Index>(input_size), name, rnd);
+Layer::Layer(In input_size, Out output_size, ActivationFunc::Name name) : func_(name) {
+    InitializeParametrs(static_cast<Index>(output_size), static_cast<Index>(input_size), name);
 }
 Layer::Layer(const Matrix& weights, const Vector& bias, ActivationFunc::Name name)
     : weights_(weights), bias_(bias), func_(name) {
@@ -42,7 +58,7 @@ void Layer::UpdateWeights(const Matrix& correction) {
            "invalid correction");
     weights_ -= correction;
 }
-void Layer::UpdateBias(const Vector correction) {
+void Layer::UpdateBias(const Vector& correction) {
     assert(correction.rows() == bias_.rows() && "invalid correction");
     bias_ -= correction;
 }
@@ -62,12 +78,11 @@ Matrix Layer::Backward(const Matrix& input_batch, const Matrix& gradient) const 
     return new_gradient;
 }
 
-WeightsBiasGradient Layer::GetWeightsBiasGradient(const Matrix& input_batch,
-                                                  const Matrix& gradient) const {
+ParamsGrad Layer::GetParametrsGradient(const Matrix& input_batch, const Matrix& gradient) const {
     assert(input_batch.cols() == gradient.rows() && "different size of gradient and input_batch");
     assert(weights_.rows() == gradient.cols() && "wrong size of gradient or of weights matrix");
     assert(weights_.cols() == input_batch.rows() && "wrong size of weight matrix or input_batch");
-    WeightsBiasGradient grad;
+    ParamsGrad grad;
     Matrix applied_linear = ApplyLinear(input_batch);
     Matrix matrix_grad_biases(bias_.rows(), input_batch.cols());
     for (int i = 0; i < input_batch.cols(); ++i) {
@@ -103,30 +118,28 @@ Index Layer::GetWeightsCols() const {
     return weights_.cols();
 }
 
-void Layer::InitializeParametrs(Index rows, Index cols, ActivationFunc::Name name, Rand& rnd) {
+void Layer::InitializeParametrs(Index rows, Index cols, ActivationFunc::Name name) {
+    RandomParams rnd = GetRandomGenerator();
     constexpr double kConst = 0.01;
     double stdev;
     switch (name) {
         case ActivationFunc::Name::ReLU:
             stdev = std::sqrt(2.0 / static_cast<double>(cols));
-            weights_ = rnd.NormalMatrix(rows, cols, 0, stdev);
-            bias_ = rnd.ConstMatrix(rows, 1, kConst);
+            weights_ = rnd.GenerateNormalMatrix(rows, cols, 0, stdev);
+            bias_ = rnd.GenerateConstantVector(rows, kConst);
             break;
 
         case ActivationFunc::Name::Id:
-            weights_ = rnd.NormalMatrix(rows, cols, 0, kConst);
-            bias_ = rnd.ConstMatrix(rows, 1, 0);
+            weights_ = rnd.GenerateNormalMatrix(rows, cols, 0, kConst);
+            bias_ = rnd.GenerateConstantVector(rows, 0);
             break;
 
         default:
             stdev = std::sqrt(2.0 / (static_cast<double>(cols) + static_cast<double>(rows)));
-            weights_ = rnd.NormalMatrix(rows, cols, 0, stdev);
-            bias_ = rnd.ConstMatrix(rows, 1, 0);
+            weights_ = rnd.GenerateNormalMatrix(rows, cols, 0, stdev);
+            bias_ = rnd.GenerateConstantVector(rows, 0);
             break;
     }
 }
-Layer::Rand& Layer::GlobalRandom() {
-    static Rand rnd;
-    return rnd;
-}
+
 }  // namespace network

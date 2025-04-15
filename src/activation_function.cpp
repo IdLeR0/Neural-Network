@@ -1,6 +1,7 @@
 
 #include "activation_function.h"
 #include <cassert>
+#include "file_reader_writer.h"
 namespace network {
 namespace details {
 struct Sigmoid {
@@ -57,7 +58,7 @@ struct Id {
 
 }  // namespace details
 
-void ActivationFunc::SetFunction(ActivationFunc::Name name) {
+ActivationFunc::ActivationFunc(ActivationFunc::Name name) {
     switch (name) {
         case ActivationFunc::Name::Sigmoid:
             func_id_ = static_cast<int>(ActivationFunc::Name::Sigmoid);
@@ -90,10 +91,6 @@ void ActivationFunc::SetFunction(ActivationFunc::Name name) {
     }
 }
 
-ActivationFunc::ActivationFunc(ActivationFunc::Name name) {
-    SetFunction(name);
-}
-
 Matrix ActivationFunc::Apply(const Matrix& x) const {
     Matrix res(x.rows(), x.cols());
 
@@ -112,4 +109,5 @@ int ActivationFunc::GetFuncId() const {
 bool ActivationFunc::operator==(const ActivationFunc& other) const {
     return GetFuncId() == other.GetFuncId();
 }
+
 }  // namespace network

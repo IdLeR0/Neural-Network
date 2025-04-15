@@ -2,6 +2,7 @@
 #include <cmath>
 #include <functional>
 #include "linalg.h"
+#include "file_reader_writer.h"
 
 namespace network {
 class ActivationFunc {
@@ -12,7 +13,6 @@ public:
     ActivationFunc() = default;
     enum class Name { Sigmoid, ReLU, Tanh, Softmax, Id };
     explicit ActivationFunc(Name name);
-    void SetFunction(Name name);
     Matrix Apply(const Matrix& x) const;
     Matrix GetDifferential(const Vector& x) const;
     int GetFuncId() const;

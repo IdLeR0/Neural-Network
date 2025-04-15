@@ -4,6 +4,16 @@ namespace network {
 namespace details {
 
 struct Mse {
+    struct Mae {
+        static double GetValue(const Vector &y_out, const Vector &y_expected) {
+            assert(y_out.size() == y_expected.size() && "Mse GetValue");
+            return (y_out - y_expected).cwiseAbs().sum();
+        }
+        static Vector GetGradient(const Vector &y_out, const Vector &y_expected) {
+            assert(y_out.size() == y_expected.size() && "Mse GetGradient");
+            return (y_out - y_expected).unaryExpr([](double x) { return x > 0 ? 1.0 : -1.0; });
+        }
+    };
 
     static double GetValue(const Vector &y_out, const Vector &y_expected) {
         assert(y_out.size() == y_expected.size() && "Mse GetValue");
