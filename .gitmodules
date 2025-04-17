@@ -8,3 +8,6 @@
 [submodule "libs/mnist"]
 	path = libs/mnist
 	url = https://github.com/wichtounet/mnist.git
+[submodule "libs/Eigen"]
+	path = libs/Eigen
+	url = https://gitlab.com/libeigen/eigen.git
