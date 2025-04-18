@@ -1,9 +1,9 @@
 #include "layer.h"
-#include "EigenRand/Dists/Basic.h"
 #include "activation_function.h"
 #include "file_reader_writer.h"
 #include <cassert>
 #include <cmath>
+
 namespace network {
 namespace {
 RandomParams& GetRandomGenerator() {
@@ -12,35 +12,14 @@ RandomParams& GetRandomGenerator() {
 }
 }  // namespace
 
-RandomParams::RandomParams(int seed) : generator_(seed) {
-}
-
-Matrix RandomParams::GenerateNormalMatrix(Index rows, Index cols, double mean, double stdev) {
-    return Eigen::Rand::normal<Matrix>(rows, cols, generator_, mean, stdev);
-}
-Vector RandomParams::GenerateNormalVector(Index rows, double mean, double stdev) {
-    return GenerateNormalMatrix(rows, 1, mean, stdev);
-}
-Matrix RandomParams::GenerateUniformMatrix(Index rows, Index cols, double min, double max) {
-    return Eigen::Rand::uniformReal<Matrix>(rows, cols, generator_, min, max);
-}
-Vector RandomParams::GenerateUniformVector(Index rows, double min, double max) {
-    return GenerateUniformMatrix(rows, 1, min, max);
-}
-
-Matrix RandomParams::GenerateConstantMatrix(Index rows, Index cols, double value) {
-    return Eigen::MatrixXd::Constant(rows, cols, value);
-}
-Vector RandomParams::GenerateConstantVector(Index rows, double value) {
-    return GenerateConstantMatrix(rows, 1, value);
-}
-
 Layer::Layer(In input_size, Out output_size, ActivationFunc::Name name) : func_(name) {
     InitializeParametrs(static_cast<Index>(output_size), static_cast<Index>(input_size), name);
 }
+
 Layer::Layer(const Matrix& weights, const Vector& bias, ActivationFunc::Name name)
     : weights_(weights), bias_(bias), func_(name) {
 }
+
 Matrix Layer::ApplyLinear(const Matrix& input_batch) const {
     assert(weights_.cols() == input_batch.rows() &&
            "can not multiply input_batch on weights matrix");
@@ -58,6 +37,7 @@ void Layer::UpdateWeights(const Matrix& correction) {
            "invalid correction");
     weights_ -= correction;
 }
+
 void Layer::UpdateBias(const Vector& correction) {
     assert(correction.rows() == bias_.rows() && "invalid correction");
     bias_ -= correction;
@@ -69,7 +49,7 @@ Matrix Layer::Backward(const Matrix& input_batch, const Matrix& gradient) const 
     assert(weights_.cols() == input_batch.rows() && "wrong size of weight matrix or input_batch");
     Matrix applied_linear = ApplyLinear(input_batch);
     Matrix tmp = gradient;
-    for (int i = 0; i < tmp.rows(); ++i) {
+    for (Index i = 0; i < tmp.rows(); ++i) {
         Matrix act_func_differ = func_.GetDifferential(applied_linear.col(i));
         tmp.row(i) = tmp.row(i) * act_func_differ;
     }
@@ -78,14 +58,14 @@ Matrix Layer::Backward(const Matrix& input_batch, const Matrix& gradient) const 
     return new_gradient;
 }
 
-ParamsGrad Layer::GetParametrsGradient(const Matrix& input_batch, const Matrix& gradient) const {
+LayerParams Layer::GetParametrsGradient(const Matrix& input_batch, const Matrix& gradient) const {
     assert(input_batch.cols() == gradient.rows() && "different size of gradient and input_batch");
     assert(weights_.rows() == gradient.cols() && "wrong size of gradient or of weights matrix");
     assert(weights_.cols() == input_batch.rows() && "wrong size of weight matrix or input_batch");
-    ParamsGrad grad;
+    LayerParams grad;
     Matrix applied_linear = ApplyLinear(input_batch);
     Matrix matrix_grad_biases(bias_.rows(), input_batch.cols());
-    for (int i = 0; i < input_batch.cols(); ++i) {
+    for (Index i = 0; i < input_batch.cols(); ++i) {
         matrix_grad_biases.col(i) =
             (gradient.row(i) * func_.GetDifferential(applied_linear.col(i))).transpose();
     }
@@ -102,7 +82,7 @@ FileWriter& operator<<(FileWriter& in, const Layer& layer) {
 }
 
 FileReader& operator>>(FileReader& out, Layer& layer) {
-    int id;
+    Index id;
     Matrix weights;
     Vector bias;
     out >> id;
@@ -111,20 +91,22 @@ FileReader& operator>>(FileReader& out, Layer& layer) {
     layer = Layer(weights, bias, static_cast<ActivationFunc::Name>(id));
     return out;
 }
+
 Index Layer::GetWeightsRows() const {
     return weights_.rows();
 }
+
 Index Layer::GetWeightsCols() const {
     return weights_.cols();
 }
 
 void Layer::InitializeParametrs(Index rows, Index cols, ActivationFunc::Name name) {
     RandomParams rnd = GetRandomGenerator();
-    constexpr double kConst = 0.01;
-    double stdev;
+    constexpr DataType kConst = 0.01;
+    DataType stdev;
     switch (name) {
         case ActivationFunc::Name::ReLU:
-            stdev = std::sqrt(2.0 / static_cast<double>(cols));
+            stdev = std::sqrt(2.0 / static_cast<DataType>(cols));
             weights_ = rnd.GenerateNormalMatrix(rows, cols, 0, stdev);
             bias_ = rnd.GenerateConstantVector(rows, kConst);
             break;
@@ -135,7 +117,7 @@ void Layer::InitializeParametrs(Index rows, Index cols, ActivationFunc::Name nam
             break;
 
         default:
-            stdev = std::sqrt(2.0 / (static_cast<double>(cols) + static_cast<double>(rows)));
+            stdev = std::sqrt(2.0 / (static_cast<DataType>(cols) + static_cast<DataType>(rows)));
             weights_ = rnd.GenerateNormalMatrix(rows, cols, 0, stdev);
             bias_ = rnd.GenerateConstantVector(rows, 0);
             break;

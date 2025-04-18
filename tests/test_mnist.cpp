@@ -5,6 +5,7 @@
 #include "file_reader_writer.h"
 #include "loss_function.h"
 #include "mnist_utils.h"
+
 void ClearFile(std::string filename) {
     std::ofstream file(filename, std::ios::binary | std::ios::trunc);
     file.close();
@@ -20,11 +21,11 @@ TEST(Mnist, WriteRead) {
     MnistUtils mnist_utils(path);
     Data train_data = mnist_utils.GetTrainData();
     DataLoader dl(std::move(train_data));
-    constexpr int kNumEpocs = 17;
-    constexpr int kBatchSize = 64;
+    constexpr Index kNumEpocs = 17;
+    constexpr Index kBatchSize = 64;
     nn.Train(dl, LossFunc::Name::CrossEntropy, kBatchSize, kNumEpocs, Info::On);
-    constexpr double kExpectedAccuracy = 0;
-    double accuracy = mnist_utils.ComputeAccuracy(nn);
+    constexpr DataType kExpectedAccuracy = 0;
+    DataType accuracy = mnist_utils.ComputeAccuracy(nn);
     EXPECT_GE(accuracy, kExpectedAccuracy);
 
     std::string filename = "save_net.bin";
