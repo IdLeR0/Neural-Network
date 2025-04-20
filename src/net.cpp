@@ -9,6 +9,7 @@
 #include "layer.h"
 
 namespace network {
+
 Net::Net(const LayerSizes& layer_sizes, const ActivationFunctions& activation_functions,
          const Params& layer_params) {
     assert(!layer_sizes.empty() && "layer_sizes empty");
@@ -108,7 +109,7 @@ void Net::AddLayer(In input_size, Out output_size, ActivationFunc::Name name) {
 }
 
 void Net::AddLayer(const Matrix& weights, const Vector& bias, ActivationFunc::Name name) {
-    assert(weights.cols() == bias.rows() && "bad params");
+    assert(weights.rows() == bias.rows() && "bad params");
     layers_.emplace_back(weights, bias, name);
 }
 

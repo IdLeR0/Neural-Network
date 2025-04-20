@@ -1,5 +1,6 @@
 
 #pragma once
+#include <filesystem>
 #include <fstream>
 #include <vector>
 #include "global_usings.h"
@@ -8,9 +9,13 @@ namespace network {
 
 class FileWriter {
     using Writer = std::ofstream;
+    using Path = std::filesystem::path;
 
 public:
-    explicit FileWriter(const std::string& filename) : w_(filename, std::ios::binary) {
+    explicit FileWriter(const Path& path) {
+        assert(IsValidPath(path) && "invalid path");
+        w_ = std::move(Writer(path, std::ios::binary));
+        assert(IsOpen() && "file did not open");
     }
 
     template<typename T>
@@ -50,14 +55,26 @@ public:
     }
 
 private:
+    bool IsValidPath(const Path& path) {
+        return std::filesystem::exists(path);
+    }
+
+    bool IsOpen() {
+        return w_.is_open();
+    }
+
     Writer w_;
 };
 
 class FileReader {
     using Reader = std::ifstream;
+    using Path = std::filesystem::path;
 
 public:
-    explicit FileReader(const std::string& filename) : r_(filename, std::ios::binary) {
+    explicit FileReader(const Path& path) {
+        assert(IsValidPath(path) && "invalid path");
+        r_ = std::move(Reader(path, std::ios::binary));
+        assert(IsOpen() && "file did not open");
     }
 
     template<typename T>
@@ -103,6 +120,14 @@ public:
     }
 
 private:
+    bool IsValidPath(const Path& path) {
+        return std::filesystem::exists(path);
+    }
+
+    bool IsOpen() {
+        return r_.is_open();
+    }
+
     Reader r_;
 };
 

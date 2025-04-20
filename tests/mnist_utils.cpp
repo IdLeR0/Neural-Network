@@ -1,9 +1,9 @@
 #include "net.h"
-#include <iostream>
 #include "mnist_utils.h"
+#include "mnist/mnist_reader.hpp"
 
 namespace network {
-MnistUtils::MnistUtils(const std::string& path) : path_(path) {
+MnistUtils::MnistUtils(const Path& path) : path_(path) {
 }
 
 Data MnistUtils::GetTrainData() {
@@ -46,7 +46,7 @@ Matrix MnistUtils::LabelToMatrix(const std::vector<uint8_t>& labels) {
     return onehot;
 }
 
-double MnistUtils::ComputeAccuracy(const Net& net) {
+DataType MnistUtils::ComputeAccuracy(const Net& net) {
     Data test_data = GetTestData();
     Matrix net_ans = net.Evaluate(test_data.input);
     assert(net_ans.cols() == test_data.output.cols() && "wrong cols");
@@ -64,7 +64,6 @@ double MnistUtils::ComputeAccuracy(const Net& net) {
         }
     }
     DataType accuracy = static_cast<DataType>(cnt) / static_cast<DataType>(test_size);
-    std::cout << "Accuracy:" << " " << accuracy << std::endl;
     return accuracy;
 }
 }  // namespace network

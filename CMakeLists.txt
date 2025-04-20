@@ -16,8 +16,8 @@ include_directories(
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/googletest)
 
-add_executable(test_mnist tests/test_mnist.cpp src/adam_optimizer.cpp src/net.cpp src/loss_function.cpp src/activation_function.cpp src/dataloader.cpp src/layer.cpp src/random_params.cpp tests/mnist_utils.cpp)
-target_link_libraries(test_mnist PRIVATE gtest gtest_main)
+add_executable(test_net tests/test_net.cpp src/adam_optimizer.cpp src/net.cpp src/loss_function.cpp src/activation_function.cpp src/dataloader.cpp src/layer.cpp src/random_params.cpp tests/mnist_utils.cpp)
+target_link_libraries(test_net PRIVATE gtest gtest_main)
 
 enable_testing()
 add_test(NAME test_mnist COMMAND test_mnist)
